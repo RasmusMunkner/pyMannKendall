@@ -9,6 +9,7 @@ Citation: Hussain et al., (2019). pyMannKendall: a python package for non parame
 
 from __future__ import division
 import numpy as np
+from numba import njit
 from scipy.stats import norm, rankdata
 from collections import namedtuple
 
@@ -67,11 +68,36 @@ def __acf(x, nlags):
 def __mk_score(x, n):
     s = 0
 
-    demo = np.ones(n) 
+    demo = np.ones(n)
     for k in range(n-1):
         s = s + np.sum(demo[k+1:n][x[k+1:n] > x[k]]) - np.sum(demo[k+1:n][x[k+1:n] < x[k]])
-        
+
     return s
+
+@njit
+def __mk_score(x, n):
+    """Calculate the classic Mann-Kendall test statistic.
+
+    Test statistic is S given by:
+        S = \sum_{i=1}^{n-1}\sum_{j=i+1}^n sign(x_j-x_i)
+
+    Parameters:
+    -------------
+    x: np.ndarray
+        Observations.
+    n: int
+        Deprecated. But maybe it is important for more advanced tests?
+    """
+    S = 0
+    x_sorted = [x[0]]
+    for x_ in x[1:]:
+        idx_left = np.searchsorted(x_sorted, x_, side="left")
+        idx_right = np.searchsorted(x_sorted, x_, side="right")
+        S += idx_left - (len(x_sorted) - idx_right)
+        x_sorted.insert(idx_left, x_)
+    return S
+
+__mk_score(np.arange(3), 3) # Just to get the function compiled
 
 	
 # original Mann-Kendal's variance S calculation
