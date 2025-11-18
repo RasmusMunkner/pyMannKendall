@@ -65,14 +65,14 @@ def __acf(x, nlags):
 
 
 # vectorization approach to calculate mk score, S
-def __mk_score(x, n):
-    s = 0
-
-    demo = np.ones(n)
-    for k in range(n-1):
-        s = s + np.sum(demo[k+1:n][x[k+1:n] > x[k]]) - np.sum(demo[k+1:n][x[k+1:n] < x[k]])
-
-    return s
+# def __mk_score(x, n):
+#     s = 0
+#
+#     demo = np.ones(n)
+#     for k in range(n-1):
+#         s = s + np.sum(demo[k+1:n][x[k+1:n] > x[k]]) - np.sum(demo[k+1:n][x[k+1:n] < x[k]])
+#
+#     return s
 
 @njit
 def __mk_score(x, n):
